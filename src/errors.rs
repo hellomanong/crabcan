@@ -3,10 +3,12 @@ use std::{
     process::exit,
 };
 
+use thiserror::Error;
 use tracing::{debug, error};
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Errcode {
+    #[error("ArgumentInvalid:{0}")]
     ArgumentInvalid(String),
 }
 
@@ -30,11 +32,11 @@ pub fn exit_with_return_code(res: Result<(), Errcode>) {
     }
 }
 
-impl Display for Errcode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::ArgumentInvalid(v) => write!(f, "ArgumentInvalid: {}", v),
-            _ => write!(f, "{:?}", self),
-        }
-    }
-}
+// impl Display for Errcode {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         match self {
+//             Self::ArgumentInvalid(v) => write!(f, "ArgumentInvalid: {}", v),
+//             _ => write!(f, "{:?}", self),
+//         }
+//     }
+// }
