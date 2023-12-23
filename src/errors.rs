@@ -1,7 +1,4 @@
-use std::{
-    fmt::{write, Display},
-    process::exit,
-};
+use std::process::exit;
 
 use thiserror::Error;
 use tracing::{debug, error};
@@ -10,6 +7,8 @@ use tracing::{debug, error};
 pub enum Errcode {
     #[error("ArgumentInvalid:{0}")]
     ArgumentInvalid(String),
+    #[error("The linux version NotSupported: return:{0}")]
+    NotSupported(u8),
 }
 
 impl Errcode {
