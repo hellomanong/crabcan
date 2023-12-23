@@ -1,5 +1,6 @@
 use std::process::exit;
 
+use nix::errno;
 use thiserror::Error;
 use tracing::{debug, error};
 
@@ -9,6 +10,8 @@ pub enum Errcode {
     ArgumentInvalid(String),
     #[error("The linux version NotSupported: return:{0}")]
     NotSupported(u8),
+    #[error("The socket error")]
+    SocketError(#[from] errno::Errno)
 }
 
 impl Errcode {

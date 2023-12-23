@@ -1,6 +1,7 @@
-use std::path::PathBuf;
+use std::{os::fd::{OwnedFd, AsRawFd, RawFd}, path::PathBuf};
 
 use clap::Parser;
+use nix::sys::socket::{socketpair, AddressFamily, SockFlag, SockType};
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -45,4 +46,15 @@ pub fn setup_log(filter: impl Into<LevelFilter>) {
         .with_max_level(filter.into())
         .finish()
         .init();
+}
+
+pub fn generate_socketpair() -> Result<(RawFd, RawFd), Errcode> {
+    let sp = socketpair(
+        AddressFamily::Unix,
+        SockType::SeqPacket,
+        None,
+        SockFlag::SOCK_CLOEXEC,
+    )?;
+
+    Ok((sp.0.as_raw_fd(), sp.1.as_raw_fd()))
 }
