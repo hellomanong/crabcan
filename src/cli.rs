@@ -1,4 +1,7 @@
-use std::{os::fd::{OwnedFd, AsRawFd, RawFd}, path::PathBuf};
+use std::{
+    os::fd::{IntoRawFd, RawFd},
+    path::PathBuf,
+};
 
 use clap::Parser;
 use nix::sys::socket::{socketpair, AddressFamily, SockFlag, SockType};
@@ -56,5 +59,5 @@ pub fn generate_socketpair() -> Result<(RawFd, RawFd), Errcode> {
         SockFlag::SOCK_CLOEXEC,
     )?;
 
-    Ok((sp.0.as_raw_fd(), sp.1.as_raw_fd()))
+    Ok((sp.0.into_raw_fd(), sp.1.into_raw_fd()))
 }

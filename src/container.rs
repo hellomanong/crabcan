@@ -1,23 +1,32 @@
 use std::os::fd::RawFd;
 
-use clap::Error;
-use nix::{sys::utsname::uname, unistd::close};
-use tracing::{debug, error, info};
+use nix::{
+    sys::{utsname::uname, wait::waitpid},
+    unistd::{close, Pid},
+};
+use tracing::{debug, error};
 
-use crate::{cli::Args, config::ContainerOpts, errors::Errcode};
+use crate::{child::generate_child_process, cli::Args, config::ContainerOpts, errors::Errcode};
 
 pub struct Container {
     sockets: (RawFd, RawFd),
     config: ContainerOpts,
+    child_pid: Option<Pid>,
 }
 
 impl Container {
     pub fn new(args: Args) -> Result<Self, Errcode> {
         let (config, sockets) = ContainerOpts::new(args.command, args.uid, args.mount_dir)?;
-        Ok(Self { sockets, config })
+        Ok(Self {
+            sockets,
+            config,
+            child_pid: None,
+        })
     }
 
     pub fn create(&mut self) -> Result<(), Errcode> {
+        let pid = generate_child_process(self.config.clone())?;
+        self.child_pid = Some(pid);
         debug!("Creation finished");
         Ok(())
     }
@@ -40,8 +49,12 @@ pub fn start(args: Args) -> Result<(), Errcode> {
     if let Err(e) = container.create() {
         container.clean_exit()?;
         error!("Error while creating container: {:?}", e);
+
         return Err(e);
     }
+
+    debug!("Container child PID: {:?}", container.child_pid);
+    wait_child(container.child_pid)?;
 
     debug!("Finished, cleaning & exit");
     container.clean_exit()
@@ -60,6 +73,18 @@ pub fn check_linux_version() -> Result<(), Errcode> {
 
     if uname.machine() != "x86_64" {
         return Err(Errcode::NotSupported(1));
+    }
+
+    Ok(())
+}
+
+pub fn wait_child(pid: Option<Pid>) -> Result<(), Errcode> {
+    if let Some(child_pid) = pid {
+        debug!("Waiting for child (pid: {child_pid} to finish");
+        if let Err(e) = waitpid(child_pid, None) {
+            error!("Error while waiting for pid to finish: {e:?}");
+            return Err(e.into());
+        }
     }
 
     Ok(())

@@ -7,8 +7,15 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.5.0"
-clap = {version = "4.4.11", features = ["derive"]}
-nix = {version = "0.27.1", features = ["user", "socket", "process", "sched"]}
+clap = { version = "4.4.11", features = ["derive"] }
+nix = { version = "0.27.1", features = [
+    "user",
+    "socket",
+    "process",
+    "sched",
+    "hostname",
+] }
+rand = "0.8.5"
 scan_fmt = "0.2.6"
 thiserror = "1.0.51"
 tracing = "0.1.40"

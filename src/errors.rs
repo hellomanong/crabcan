@@ -6,12 +6,14 @@ use tracing::{debug, error};
 
 #[derive(Debug, Error)]
 pub enum Errcode {
-    #[error("ArgumentInvalid:{0}")]
+    #[error("ArgumentInvalid: {0}")]
     ArgumentInvalid(String),
-    #[error("The linux version NotSupported: return:{0}")]
+    #[error("The linux version NotSupported: return: {0}")]
     NotSupported(u8),
-    #[error("The socket error")]
-    SocketError(#[from] errno::Errno)
+    #[error("The system error: {0}")]
+    SystemError(#[from] errno::Errno),
+    #[error("Get rand error")]
+    RngError,
 }
 
 impl Errcode {

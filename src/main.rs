@@ -5,6 +5,7 @@ mod cli;
 mod config;
 mod container;
 mod errors;
+mod hostname;
 mod ipc;
 fn main() {
     match cli::parse_args() {
