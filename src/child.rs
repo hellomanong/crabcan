@@ -3,9 +3,12 @@ use nix::{
     sys::signal::Signal,
     unistd::Pid,
 };
-use tracing::info;
+use tracing::{debug, error, info};
 
-use crate::{config::ContainerOpts, errors::Errcode};
+use crate::{
+    config::ContainerOpts, errors::Errcode, hostname::set_container_hostname,
+    mount::set_mount_point,
+};
 
 fn child(config: ContainerOpts) -> isize {
     info!(
@@ -13,6 +16,14 @@ fn child(config: ContainerOpts) -> isize {
         config.path.to_str().unwrap(),
         config.argv
     );
+
+    match setup_container_configurations(&config) {
+        Ok(_) => {}
+        Err(e) => {
+            error!("Set up container err: {e}");
+            return -1;
+        }
+    }
 
     0
 }
@@ -40,4 +51,10 @@ pub fn generate_child_process(config: ContainerOpts) -> Result<Pid, Errcode> {
     }
 
     Ok(pid)
+}
+
+fn setup_container_configurations(config: &ContainerOpts) -> Result<(), Errcode> {
+    set_container_hostname(&config.hostname)?;
+    set_mount_point(&config.mount_dir)?;
+    Ok(())
 }

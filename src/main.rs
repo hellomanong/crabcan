@@ -7,6 +7,8 @@ mod container;
 mod errors;
 mod hostname;
 mod ipc;
+mod mount;
+mod utils;
 fn main() {
     match cli::parse_args() {
         Ok(args) => exit_with_return_code(container::start(args)),

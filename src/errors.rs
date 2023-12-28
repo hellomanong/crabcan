@@ -1,4 +1,4 @@
-use std::process::exit;
+use std::{io, process::exit};
 
 use nix::errno;
 use thiserror::Error;
@@ -14,6 +14,8 @@ pub enum Errcode {
     SystemError(#[from] errno::Errno),
     #[error("Get rand error")]
     RngError,
+    #[error("Io err: {0}")]
+    IoError(#[from] io::Error),
 }
 
 impl Errcode {
