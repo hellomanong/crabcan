@@ -6,7 +6,10 @@ use nix::{
 };
 use tracing::{debug, error};
 
-use crate::{child::generate_child_process, cli::Args, config::ContainerOpts, errors::Errcode};
+use crate::{
+    child::generate_child_process, cli::Args, config::ContainerOpts, errors::Errcode,
+    namespaces::handle_child_uid_map,
+};
 
 pub struct Container {
     sockets: (RawFd, RawFd),
@@ -26,6 +29,9 @@ impl Container {
 
     pub fn create(&mut self) -> Result<(), Errcode> {
         let pid = generate_child_process(self.config.clone())?;
+
+        handle_child_uid_map(pid, self.sockets.0)?;
+
         self.child_pid = Some(pid);
         debug!("Creation finished");
         Ok(())
@@ -49,7 +55,6 @@ pub fn start(args: Args) -> Result<(), Errcode> {
     if let Err(e) = container.create() {
         container.clean_exit()?;
         error!("Error while creating container: {:?}", e);
-
         return Err(e);
     }
 

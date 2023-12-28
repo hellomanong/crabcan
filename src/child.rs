@@ -7,7 +7,7 @@ use tracing::{debug, error, info};
 
 use crate::{
     config::ContainerOpts, errors::Errcode, hostname::set_container_hostname,
-    mount::set_mount_point,
+    mount::set_mount_point, namespaces::userns,
 };
 
 fn child(config: ContainerOpts) -> isize {
@@ -56,5 +56,6 @@ pub fn generate_child_process(config: ContainerOpts) -> Result<Pid, Errcode> {
 fn setup_container_configurations(config: &ContainerOpts) -> Result<(), Errcode> {
     set_container_hostname(&config.hostname)?;
     set_mount_point(&config.mount_dir)?;
+    userns(config.fd, config.uid)?;
     Ok(())
 }

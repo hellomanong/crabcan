@@ -1,11 +1,9 @@
 use std::os::fd::RawFd;
 
-use bytes::BytesMut;
-use nix::sys::socket::{send, MsgFlags, recv};
-use tracing::{info, debug};
+use nix::sys::socket::{recv, send, MsgFlags};
+use tracing::{debug, info};
 
 use crate::errors::Errcode;
-
 
 pub fn send_bool(fd: RawFd, data: bool) -> Result<(), Errcode> {
     let data = [data.into()];
@@ -14,10 +12,16 @@ pub fn send_bool(fd: RawFd, data: bool) -> Result<(), Errcode> {
     Ok(())
 }
 
-pub fn recv_data(fd: RawFd) -> Result<bool, Errcode> {
+pub fn recv_bool(fd: RawFd) -> Result<bool, Errcode> {
     let mut data: [u8; 1] = [0];
 
-    let _num = recv(fd, &mut data, MsgFlags::empty())?;
-    // debug!("recv num:{num}");
-    Ok(data[0] == 1)
+    let res = recv(fd, &mut data, MsgFlags::empty()).map_or_else(
+        |e| {
+            debug!("Recv err: {e}");
+            Err(e)
+        },
+        |_| Ok(data[0] == 1),
+    )?;
+
+    Ok(res)
 }

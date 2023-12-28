@@ -8,6 +8,7 @@ mod errors;
 mod hostname;
 mod ipc;
 mod mount;
+mod namespaces;
 mod utils;
 fn main() {
     match cli::parse_args() {

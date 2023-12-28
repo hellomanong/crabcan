@@ -1,17 +1,10 @@
-use std::{
-    fs::read_dir,
-    path::{Path, PathBuf},
-    thread::sleep,
-    time::{self, Duration},
-};
+use std::path::PathBuf;
 
 use nix::{
     mount::{mount, umount2, MntFlags, MsFlags},
-    sched::{unshare, CloneFlags},
     unistd::{chdir, pivot_root},
 };
 use tracing::{debug, error};
-use tracing_subscriber::fmt::format;
 
 use crate::{
     errors::Errcode,
@@ -24,6 +17,7 @@ pub fn set_mount_point(mount_bind: &PathBuf) -> Result<(), Errcode> {
     let flags = vec![MsFlags::MS_PRIVATE, MsFlags::MS_REC];
     let root = PathBuf::from("/");
     mount_dir(None, &root, None, flags)?;
+    debug!("Mount / succeed");
 
     // let dir = PathBuf::from("/");
     // let dir = read_dir(dir).map_err(|e| {
@@ -38,7 +32,7 @@ pub fn set_mount_point(mount_bind: &PathBuf) -> Result<(), Errcode> {
     let ftype = PathBuf::from("tmpfs");
     let tmp = PathBuf::from("/tmp");
     mount_dir(None, &tmp, Some(&ftype), vec![])?;
-
+    debug!("Mount /tmp succeed");
     // sleep(Duration::from_secs(300));
 
     let new_root = PathBuf::from(format!("/tmp/crabcan. {}", random_string(12)));
@@ -49,6 +43,11 @@ pub fn set_mount_point(mount_bind: &PathBuf) -> Result<(), Errcode> {
         None,
         vec![MsFlags::MS_PRIVATE, MsFlags::MS_BIND],
     )?;
+    debug!(
+        "Mount bind {} {:?} succeed",
+        mount_bind.to_str().unwrap(),
+        new_root.to_str().unwrap()
+    );
 
     let old_root = format!("oldroot. {}", random_string(6));
     let put_root = new_root.join(PathBuf::from(old_root.clone()));
@@ -67,6 +66,8 @@ pub fn set_mount_point(mount_bind: &PathBuf) -> Result<(), Errcode> {
 
     unmount_dir(&old_root)?;
     delete_dir(&old_root)?;
+
+    debug!("Unmounting & del {} succeed", old_root.to_str().unwrap());
 
     Ok(())
 }
