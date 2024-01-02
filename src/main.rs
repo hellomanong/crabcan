@@ -1,5 +1,6 @@
 use errors::exit_with_return_code;
 
+mod capabilities;
 mod child;
 mod cli;
 mod config;
@@ -9,6 +10,7 @@ mod hostname;
 mod ipc;
 mod mount;
 mod namespaces;
+mod syscalls;
 mod utils;
 fn main() {
     match cli::parse_args() {

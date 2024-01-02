@@ -16,6 +16,8 @@ pub enum Errcode {
     RngError,
     #[error("Io err: {0}")]
     IoError(#[from] io::Error),
+    #[error("Syscall err: {0}")]
+    SyscallsError(#[from] syscallz::Error),
 }
 
 impl Errcode {

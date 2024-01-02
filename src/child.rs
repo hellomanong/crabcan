@@ -6,8 +6,9 @@ use nix::{
 use tracing::{debug, error, info};
 
 use crate::{
-    config::ContainerOpts, errors::Errcode, hostname::set_container_hostname,
-    mount::set_mount_point, namespaces::userns,
+    capabilities::setcapabilities, config::ContainerOpts, errors::Errcode,
+    hostname::set_container_hostname, mount::set_mount_point, namespaces::userns,
+    syscalls::setsyscalls,
 };
 
 fn child(config: ContainerOpts) -> isize {
@@ -57,5 +58,7 @@ fn setup_container_configurations(config: &ContainerOpts) -> Result<(), Errcode>
     set_container_hostname(&config.hostname)?;
     set_mount_point(&config.mount_dir)?;
     userns(config.fd, config.uid)?;
+    setcapabilities()?;
+    setsyscalls()?;
     Ok(())
 }
