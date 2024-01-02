@@ -10,6 +10,7 @@ mod hostname;
 mod ipc;
 mod mount;
 mod namespaces;
+mod resources;
 mod syscalls;
 mod utils;
 fn main() {

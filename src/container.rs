@@ -7,8 +7,12 @@ use nix::{
 use tracing::{debug, error};
 
 use crate::{
-    child::generate_child_process, cli::Args, config::ContainerOpts, errors::Errcode,
+    child::generate_child_process,
+    cli::Args,
+    config::ContainerOpts,
+    errors::Errcode,
     namespaces::handle_child_uid_map,
+    resources::{clean_cgroups, restrict_resouces},
 };
 
 pub struct Container {
@@ -29,7 +33,7 @@ impl Container {
 
     pub fn create(&mut self) -> Result<(), Errcode> {
         let pid = generate_child_process(self.config.clone())?;
-
+        restrict_resouces(&self.config.hostname, pid)?;
         handle_child_uid_map(pid, self.sockets.0)?;
 
         self.child_pid = Some(pid);
@@ -43,6 +47,9 @@ impl Container {
         debug!("close write socket success");
         close(self.sockets.1)?;
         debug!("close read socket success");
+
+        // wsl 中不知为啥无法使用cgroup2，暂时先不清理了
+        // clean_cgroups(&self.config.hostname)?;
         Ok(())
     }
 }

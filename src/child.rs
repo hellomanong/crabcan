@@ -3,7 +3,7 @@ use nix::{
     sys::signal::Signal,
     unistd::Pid,
 };
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 use crate::{
     capabilities::setcapabilities, config::ContainerOpts, errors::Errcode,

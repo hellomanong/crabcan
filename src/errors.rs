@@ -18,6 +18,8 @@ pub enum Errcode {
     IoError(#[from] io::Error),
     #[error("Syscall err: {0}")]
     SyscallsError(#[from] syscallz::Error),
+    #[error("Cgroup err: {0}")]
+    CgroupError(#[from] cgroups_rs::error::Error),
 }
 
 impl Errcode {

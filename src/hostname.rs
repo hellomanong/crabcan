@@ -3,10 +3,10 @@ use nix::unistd::sethostname;
 use rand::{seq::SliceRandom, Rng};
 use tracing::debug;
 
-const HOSTNAME_NAMES: [&'static str; 8] = [
+const HOSTNAME_NAMES: [&str; 8] = [
     "cat", "world", "coffee", "girl", "man", "book", "pinguin", "moon",
 ];
-const HOSTNAME_ADJ: [&'static str; 16] = [
+const HOSTNAME_ADJ: [&str; 16] = [
     "blue",
     "red",
     "green",

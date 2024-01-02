@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bytes = "1.5.0"
 capctl = "0.2.3"
+cgroups-rs = "0.3.4"
 clap = { version = "4.4.11", features = ["derive"] }
 libc = "0.2.151"
 nix = { version = "0.27.1", features = [
@@ -21,6 +22,7 @@ nix = { version = "0.27.1", features = [
     "user",
 ] }
 rand = "0.8.5"
+rlimit = "0.10.1"
 scan_fmt = "0.2.6"
 syscallz = "0.17.0"
 thiserror = "1.0.51"

@@ -1,7 +1,7 @@
 use std::os::fd::RawFd;
 
 use nix::sys::socket::{recv, send, MsgFlags};
-use tracing::{debug, info};
+use tracing::debug;
 
 use crate::errors::Errcode;
 
