@@ -12,7 +12,10 @@ use crate::{
 };
 
 // 如果命名空间是使用clone(2) 创建的，则子进程命名空间的挂载列表是父进程挂载命名空间中挂载列表的副本
-pub fn set_mount_point(mount_bind: &PathBuf) -> Result<(), Errcode> {
+pub fn set_mount_point(
+    mount_bind: &PathBuf,
+    addpaths: &Vec<(PathBuf, PathBuf)>,
+) -> Result<(), Errcode> {
     // 使用MS_PRIVATE重新挂载
     let flags = vec![MsFlags::MS_PRIVATE, MsFlags::MS_REC];
     let root = PathBuf::from("/");
@@ -48,6 +51,19 @@ pub fn set_mount_point(mount_bind: &PathBuf) -> Result<(), Errcode> {
         mount_bind.to_str().unwrap(),
         new_root.to_str().unwrap()
     );
+
+    debug!("Mounting additional paths");
+    for (inpath, mntpath) in addpaths.iter() {
+        let outpath = new_root.join(mntpath);
+        create_directory(&outpath)?;
+        mount_dir(
+            Some(inpath),
+            &outpath,
+            None,
+            vec![MsFlags::MS_PRIVATE, MsFlags::MS_BIND],
+        )?;
+    }
+    debug!("Pivoting root");
 
     let old_root = format!("oldroot. {}", random_string(6));
     let put_root = new_root.join(PathBuf::from(old_root.clone()));

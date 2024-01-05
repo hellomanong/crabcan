@@ -1,6 +1,6 @@
 use std::fs::{canonicalize, remove_dir};
 
-use cgroups_rs::{cgroup_builder::CgroupBuilder, CgroupPid, MaxValue};
+use cgroups_rs::{cgroup_builder::CgroupBuilder, hierarchies::V2, CgroupPid, MaxValue};
 use nix::unistd::Pid;
 use rlimit::{setrlimit, Resource};
 use tracing::{debug, error, info};
@@ -29,10 +29,11 @@ pub fn restrict_resouces(hostname: &String, pid: Pid) -> Result<(), Errcode> {
         .blkio()
         .weight(50)
         .done()
+        // .build(Box::new(V2::new()))
         .build(h)
         .unwrap();
 
-    // info!("-------subsystems:{:?}-----", cgs.subsystems());
+    info!("-------cgroup v2 ok? :{:?}-----", cgs.v2());
 
     let pid: u64 = pid.as_raw().try_into().unwrap();
     info!("----the pid is: {pid}----");

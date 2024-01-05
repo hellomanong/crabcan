@@ -17,14 +17,17 @@ pub struct Args {
     #[arg(short, long)]
     debug: bool,
     /// Command to execute inside the container
-    #[arg(short, long)]
+    #[arg(short, long, required = true)]
     pub command: String,
     /// user ID to create inside the container
     #[arg(short, long)]
     pub uid: u32,
     /// Directory to mount as root of the container
-    #[arg(short, long="mount", value_parser=clap::value_parser!(std::path::PathBuf))]
+    #[arg(short, long = "mount")]
     pub mount_dir: PathBuf,
+    /// Mount a directory inside the container
+    #[arg(short, long = "add")]
+    pub addpaths: Vec<PathBuf>,
 }
 
 pub fn parse_args() -> Result<Args, Errcode> {
@@ -35,6 +38,11 @@ pub fn parse_args() -> Result<Args, Errcode> {
     } else {
         setup_log(LevelFilter::INFO);
     }
+
+    if args.command.is_empty() {
+        return Err(Errcode::ArgumentInvalid("command".into()));
+    }
+
     info!("{args:?}");
 
     if !args.mount_dir.exists() || !args.mount_dir.is_dir() {

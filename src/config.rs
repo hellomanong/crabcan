@@ -12,6 +12,7 @@ pub struct ContainerOpts {
     pub mount_dir: PathBuf,
     pub fd: RawFd,
     pub hostname: String,
+    pub addpaths: Vec<(PathBuf, PathBuf)>,
 }
 
 impl ContainerOpts {
@@ -19,6 +20,7 @@ impl ContainerOpts {
         command: String,
         uid: u32,
         mount_dir: PathBuf,
+        addpaths: Vec<(PathBuf, PathBuf)>,
     ) -> Result<(ContainerOpts, (RawFd, RawFd)), Errcode> {
         let sockets = generate_socketpair()?;
         debug!("Get socket pair: {}, {}", sockets.0, sockets.1);
@@ -38,6 +40,7 @@ impl ContainerOpts {
                 mount_dir,
                 fd: sockets.1.clone(),
                 hostname,
+                addpaths,
             },
             sockets,
         ))

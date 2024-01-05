@@ -1,4 +1,4 @@
-use std::os::fd::RawFd;
+use std::{os::fd::RawFd, path::PathBuf};
 
 use nix::{
     sys::{utsname::uname, wait::waitpid},
@@ -7,12 +7,8 @@ use nix::{
 use tracing::{debug, error};
 
 use crate::{
-    child::generate_child_process,
-    cli::Args,
-    config::ContainerOpts,
-    errors::Errcode,
-    namespaces::handle_child_uid_map,
-    resources::{clean_cgroups, restrict_resouces},
+    child::generate_child_process, cli::Args, config::ContainerOpts, errors::Errcode,
+    namespaces::handle_child_uid_map, resources::restrict_resouces,
 };
 
 pub struct Container {
@@ -23,7 +19,22 @@ pub struct Container {
 
 impl Container {
     pub fn new(args: Args) -> Result<Self, Errcode> {
-        let (config, sockets) = ContainerOpts::new(args.command, args.uid, args.mount_dir)?;
+        let mut addpaths = vec![];
+        for ap_pair in args.addpaths.iter() {
+            let mut pair = ap_pair.to_str().unwrap().split(":");
+            let frompath = PathBuf::from(pair.next().unwrap())
+                .canonicalize()
+                .expect("Cannot canonicalize path")
+                .to_path_buf();
+            let mntpath = PathBuf::from(pair.next().unwrap())
+                .strip_prefix("/")
+                .expect("Cannot strip prefix from path")
+                .to_path_buf();
+            addpaths.push((frompath, mntpath));
+        }
+        let (config, sockets) =
+            ContainerOpts::new(args.command, args.uid, args.mount_dir, addpaths)?;
+
         Ok(Self {
             sockets,
             config,

@@ -1,7 +1,9 @@
+use std::ffi::CString;
+
 use nix::{
     sched::{clone, CloneFlags},
     sys::signal::Signal,
-    unistd::Pid,
+    unistd::{execve, Pid},
 };
 use tracing::{error, info};
 
@@ -26,7 +28,19 @@ fn child(config: ContainerOpts) -> isize {
         }
     }
 
-    0
+    info!(
+        "Starting container with command {} and args {:?}",
+        config.path.to_str().unwrap(),
+        config.argv
+    );
+
+    match execve::<CString, CString>(&config.path, &config.argv, &[]) {
+        Ok(_) => return 0,
+        Err(e) => {
+            error!("execve {:?} err: {e}", config.path);
+            return 1;
+        }
+    }
 }
 
 const STACK_SIZE: usize = 1024 * 1024;
@@ -56,7 +70,7 @@ pub fn generate_child_process(config: ContainerOpts) -> Result<Pid, Errcode> {
 
 fn setup_container_configurations(config: &ContainerOpts) -> Result<(), Errcode> {
     set_container_hostname(&config.hostname)?;
-    set_mount_point(&config.mount_dir)?;
+    set_mount_point(&config.mount_dir, &config.addpaths)?;
     userns(config.fd, config.uid)?;
     setcapabilities()?;
     setsyscalls()?;

@@ -1,3 +1,4 @@
+workspace = { members = ["testbin"] }
 [package]
 name = "crabcan"
 version = "0.1.0"
